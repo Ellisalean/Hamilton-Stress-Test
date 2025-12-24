@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-// NOTE: In a real environment, these would be in import.meta.env
-// For this demo, we check if they exist, otherwise we mock the success.
 const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL || '';
 const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || '';
 
@@ -11,6 +9,9 @@ const supabase = isConfigured
   ? createClient(SUPABASE_URL, SUPABASE_KEY) 
   : null;
 
+/**
+ * Guarda el resultado de un test en la tabla 'hamilton_results'
+ */
 export const saveTestResult = async (
   userName: string, 
   score: number, 
@@ -18,9 +19,8 @@ export const saveTestResult = async (
   answers: Record<number, number>
 ) => {
   if (!supabase) {
-    console.warn("Supabase not configured. Mocking success.");
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.warn("Supabase no configurado. Simulando éxito localmente.");
+    await new Promise(resolve => setTimeout(resolve, 800));
     return { error: null, data: { id: 'mock-id' } };
   }
 
@@ -39,6 +39,35 @@ export const saveTestResult = async (
       
     return { data, error };
   } catch (err) {
+    console.error("Error en Supabase:", err);
+    return { data: null, error: err };
+  }
+};
+
+/**
+ * Guarda un nuevo suscriptor en la tabla 'test_subscribers'
+ */
+export const subscribeUser = async (email: string, userName?: string) => {
+  if (!supabase) {
+    console.warn("Supabase no configurado. Simulando suscripción.");
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return { error: null, data: { success: true } };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('test_subscribers')
+      .insert([
+        { 
+          email: email, 
+          user_name: userName,
+          created_at: new Date().toISOString()
+        }
+      ]);
+      
+    return { data, error };
+  } catch (err) {
+    console.error("Error en suscripción:", err);
     return { data: null, error: err };
   }
 };

@@ -30,53 +30,53 @@ export const SCORING_RANGES = [
     color: "text-green-600", 
     bg: "bg-green-100",
     recommendations: [
-      "Mantener hábitos de sueño regulares.",
-      "Practicar actividad física al menos 3 veces por semana.",
-      "Continuar con prácticas de autocuidado y tiempo de ocio."
+      "Optimización del Descanso: Asegura una higiene del sueño estricta (7-8 horas) para consolidar tu resiliencia emocional ante desafíos futuros.",
+      "Práctica de Ocio Activo: Integra actividades que no tengan una meta productiva (hobbies, lectura) para desconectar el sistema de alerta de tu cerebro.",
+      "Mantenimiento Físico: Continúa con actividad cardiovascular regular, ya que ayuda a metabolizar las pequeñas dosis diarias de cortisol de forma natural."
     ]
   },
   { 
     max: 18, 
-    label: "Leve", 
+    label: "Ansiedad Leve", 
     color: "text-yellow-600", 
     bg: "bg-yellow-100",
     recommendations: [
-      "Iniciarse en técnicas de respiración diafragmática.",
-      "Evaluar y organizar la carga de tareas diarias.",
-      "Practicar mindfulness o meditación guiada 10 minutos al día."
+      "Identificación de Estresores: Lleva un registro simple de qué momentos del día aumentan tu inquietud para identificar patrones o detonantes específicos.",
+      "Técnicas de Micro-respiración: Implementa la respiración en caja (4x4) durante momentos de transición entre tareas para resetear tu sistema nervioso.",
+      "Gestión de Cargas: Revisa tu agenda semanal y prioriza tareas esenciales, delegando o posponiendo aquellas que generan presión innecesaria."
     ]
   },
   { 
     max: 25, 
-    label: "Moderada", 
+    label: "Ansiedad Moderada", 
     color: "text-orange-600", 
     bg: "bg-orange-100",
     recommendations: [
-      "Reducir el consumo de cafeína y otros estimulantes.",
-      "Establecer límites claros entre el trabajo y la vida personal.",
-      "Considerar la consulta con un profesional para gestionar el estrés."
+      "Establecimiento de Límites Digitales: Reduce el consumo de noticias y redes sociales, especialmente 2 horas antes de dormir, para disminuir la sobreestimulación mental.",
+      "Movimiento como Liberación: Practica ejercicios de estiramiento o yoga para liberar la tensión muscular acumulada en cuello y espalda por la ansiedad.",
+      "Soporte Social Activo: Comparte tu estado con personas de confianza; verbalizar la ansiedad ayuda a reducir su impacto y proporciona una nueva perspectiva."
     ]
   },
   { 
     max: 33, 
-    label: "Severa", 
+    label: "Ansiedad Severa", 
     color: "text-red-600", 
     bg: "bg-red-100",
     recommendations: [
-      "Priorizar la búsqueda de apoyo profesional psicológico.",
-      "Hablar con personas de confianza sobre su estado emocional.",
-      "Practicar técnicas de relajación muscular progresiva."
+      "Consulta con Especialista: Te recomendamos encarecidamente agendar una sesión con un psicólogo para trabajar herramientas cognitivo-conductuales de manejo.",
+      "Relajación Muscular Progresiva: Practica la técnica de Jacobson (tensar y relajar grupos musculares) para combatir los síntomas físicos intensos de la ansiedad.",
+      "Simplificación Radical: Reduce temporalmente tus compromisos a lo mínimo vital para permitir que tu cuerpo y mente salgan del estado de alerta constante."
     ]
   },
   { 
     max: 100, 
-    label: "Extremadamente Severa", 
+    label: "Ansiedad Muy Severa", 
     color: "text-red-800", 
     bg: "bg-red-200",
     recommendations: [
-      "Búsqueda inmediata de asistencia profesional especializada.",
-      "Evitar la toma de decisiones importantes bajo este estado.",
-      "Asegurar un entorno de apoyo constante y seguro."
+      "Intervención Profesional Inmediata: Busca apoyo psicológico o psiquiátrico urgente. Este nivel de ansiedad requiere un acompañamiento clínico especializado.",
+      "Entorno de Seguridad: Comunica tu situación a tu círculo más cercano para asegurar una red de apoyo que pueda asistirte en tareas cotidianas.",
+      "Suspensión de Decisiones: Evita tomar cambios importantes de vida (trabajo, pareja, finanzas) hasta que tu nivel de ansiedad se haya estabilizado profesionalmente."
     ]
   },
 ];
