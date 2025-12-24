@@ -1,9 +1,10 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { QUESTIONS, OPTIONS, getScoreCategory } from './constants';
 import { TestStep } from './types';
 import { Button } from './components/Button';
 import { ProgressBar } from './components/ProgressBar';
-import { saveTestResult, checkConnection, updateConfig, clearConfig, supabase } from './services/supabaseService';
+import { saveTestResult, checkConnection, updateConfig, clearConfig, getSupabase } from './services/supabaseService';
 import { 
   Activity, 
   ChevronRight, 
@@ -96,7 +97,8 @@ const App: React.FC = () => {
     
     if (result.error) {
       setSaveStatus('error');
-      alert(`⚠️ Error de Guardado:\n${typeof result.error === 'string' ? result.error : result.error.message}`);
+      // Usamos un alert más descriptivo para ayudar al usuario
+      alert(`⚠️ Problema de Configuración:\n\n${typeof result.error === 'string' ? result.error : result.error.message}`);
     } else {
       setSaveStatus('success');
     }
@@ -124,7 +126,7 @@ const App: React.FC = () => {
             <div className="p-2 bg-primary-100 rounded-lg">
               <Database className="w-5 h-5 text-primary-600" />
             </div>
-            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tight">Configuración Experta</h3>
+            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tight">Acceso a Nube</h3>
           </div>
           <button onClick={() => setShowConfigModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
             <X className="w-6 h-6 text-slate-400" />
@@ -132,26 +134,26 @@ const App: React.FC = () => {
         </div>
         
         <div className="p-8 space-y-6">
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex gap-3">
-            <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-            <p className="text-blue-700 text-xs leading-relaxed font-medium">
-              Para que el test funcione automáticamente para todos tus usuarios, añade <b>VITE_SUPABASE_URL</b> y <b>VITE_SUPABASE_ANON_KEY</b> en el panel de Netlify.
+          <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex gap-3">
+            <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-amber-700 text-xs leading-relaxed font-medium">
+              Si el botón sale en naranja, significa que Netlify no está enviando las llaves. Asegúrate de que empiecen por <b>VITE_</b> y haz un <b>Redeploy</b>.
             </p>
           </div>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">URL Temporal (Solo este PC)</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Project URL</label>
               <input 
                 type="text" 
                 className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-slate-700 transition-all"
-                placeholder="https://..."
+                placeholder="https://xyz.supabase.co"
                 value={inputUrl}
                 onChange={(e) => setInputUrl(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Key Temporal (Solo este PC)</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Anon Key</label>
               <textarea 
                 className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-slate-700 transition-all min-h-[100px] resize-none"
                 placeholder="eyJhbGciOi..."
@@ -163,13 +165,13 @@ const App: React.FC = () => {
 
           <div className="flex flex-col gap-3">
             <Button fullWidth onClick={handleSaveConfig} className="h-16 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl">
-              Aplicar en este navegador
+              Conectar Ahora
             </Button>
             <button 
               onClick={clearConfig}
               className="text-[10px] font-black uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors"
             >
-              Borrar caché de conexión
+              Resetear conexión
             </button>
           </div>
         </div>
@@ -202,7 +204,7 @@ const App: React.FC = () => {
         {dbStatus === 'online' && <Wifi className="w-3 h-3 text-green-500" />}
         {dbStatus === 'offline' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
         <span className={`text-[10px] font-black uppercase tracking-widest ${dbStatus === 'offline' ? 'text-amber-700' : 'text-slate-400'}`}>
-          {dbStatus === 'checking' ? 'Verificando...' : dbStatus === 'online' ? 'Nube Lista' : 'Configuración Incompleta'}
+          {dbStatus === 'checking' ? 'Buscando Nube...' : dbStatus === 'online' ? 'Conexión Activa' : 'Configuración Pendiente'}
         </span>
         <Settings className="w-3 h-3 ml-1 opacity-40" />
       </div>
@@ -226,7 +228,7 @@ const App: React.FC = () => {
 
       <div className="mt-12 flex items-center gap-2 text-slate-400 text-xs font-black uppercase tracking-widest">
         <ShieldCheck className="w-4 h-4 text-green-500" />
-        Encriptado y Seguro
+        Datos Protegidos
       </div>
     </div>
   );
