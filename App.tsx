@@ -13,13 +13,10 @@ import {
   Share2,
   Copy,
   MessageCircle,
-  Mail,
-  ArrowRight,
-  TrendingUp,
   ShieldCheck,
   Wifi,
   WifiOff,
-  CloudCheck
+  AlertTriangle
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -27,11 +24,8 @@ const App: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [isSubscribing, setIsSubscribing] = useState(false);
-  const [subscribed, setSubscribed] = useState(false);
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
   const [dbStatus, setDbStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
@@ -87,19 +81,10 @@ const App: React.FC = () => {
     
     if (result.error) {
       setSaveStatus('error');
-      alert(`❌ Error al guardar en Supabase: ${result.error.message || result.error}`);
+      alert(`⚠️ Error de Configuración:\n\n${typeof result.error === 'string' ? result.error : result.error.message}`);
     } else {
       setSaveStatus('success');
     }
-  };
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubscribing(true);
-    const { error } = await subscribeUser(userEmail, userName);
-    setIsSubscribing(false);
-    if (error) alert(`⚠️ Error en suscripción: ${error}`);
-    else setSubscribed(true);
   };
 
   const shareUrl = window.location.origin + "/";
@@ -133,12 +118,12 @@ const App: React.FC = () => {
         Mide tu salud emocional con rigor clínico. Un análisis rápido de 20 preguntas para entender tu nivel de estrés actual.
       </p>
 
-      <div className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-100 shadow-sm">
+      <div className={`mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white border shadow-sm transition-colors ${dbStatus === 'offline' ? 'border-amber-200 bg-amber-50' : 'border-slate-100'}`}>
         {dbStatus === 'checking' && <div className="w-2 h-2 rounded-full bg-slate-300 animate-pulse" />}
         {dbStatus === 'online' && <Wifi className="w-3 h-3 text-green-500" />}
-        {dbStatus === 'offline' && <WifiOff className="w-3 h-3 text-amber-500" />}
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-          {dbStatus === 'checking' ? 'Conectando...' : dbStatus === 'online' ? 'Nube Conectada' : 'Error de Conexión'}
+        {dbStatus === 'offline' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+        <span className={`text-[10px] font-black uppercase tracking-widest ${dbStatus === 'offline' ? 'text-amber-700' : 'text-slate-400'}`}>
+          {dbStatus === 'checking' ? 'Conectando...' : dbStatus === 'online' ? 'Nube Conectada' : 'Configuración Pendiente en Netlify'}
         </span>
       </div>
 
@@ -178,16 +163,12 @@ const App: React.FC = () => {
         <ProgressBar current={currentQuestionIndex + 1} total={QUESTIONS.length} />
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-8 md:p-12 mb-8 min-h-[400px] flex flex-col justify-center relative overflow-hidden border border-slate-50">
-        <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
-           <BrainCircuit className="w-48 h-48 text-slate-900" />
-        </div>
-        
-        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-12 leading-tight relative z-10 tracking-tight">
+      <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-8 md:p-12 mb-8 min-h-[400px] flex flex-col justify-center relative border border-slate-50">
+        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-12 leading-tight tracking-tight">
           {currentQuestion.text}
         </h2>
 
-        <div className="space-y-4 relative z-10">
+        <div className="space-y-4">
           {OPTIONS.map((option) => {
             const isSelected = answers[currentQuestion.id] === option.value;
             return (
@@ -201,7 +182,7 @@ const App: React.FC = () => {
                 }`}
               >
                 <div className={`w-7 h-7 rounded-full border-2 mr-5 flex items-center justify-center transition-all ${
-                  isSelected ? 'border-primary-500 bg-primary-500 scale-110 shadow-lg shadow-primary-500/40' : 'border-slate-200 group-hover:border-primary-300'
+                  isSelected ? 'border-primary-500 bg-primary-500 scale-110' : 'border-slate-200'
                 }`}>
                   {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
                 </div>

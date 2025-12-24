@@ -1,18 +1,37 @@
 import { createClient } from '@supabase/supabase-js';
 
-const getEnv = (name: string) => {
-  return (
-    (import.meta as any)?.env?.[name] || 
-    process.env[name] || 
-    (window as any)._env_?.[name] || 
-    ''
-  );
+// Función ultra-flexible para encontrar las variables en cualquier entorno
+const getEnv = (name: string): string => {
+  const env = (import.meta as any)?.env || {};
+  const processEnv = (typeof process !== 'undefined' ? process.env : {}) as any;
+  const windowEnv = (window as any)._env_ || {};
+
+  // Buscamos con diferentes prefijos comunes
+  const possibleNames = [
+    `VITE_${name}`,
+    `REACT_APP_${name}`,
+    name
+  ];
+
+  for (const n of possibleNames) {
+    const val = env[n] || processEnv[n] || windowEnv[n];
+    if (val) return val.trim();
+  }
+
+  return '';
 };
 
-const SUPABASE_URL = getEnv('REACT_APP_SUPABASE_URL');
-const SUPABASE_KEY = getEnv('REACT_APP_SUPABASE_ANON_KEY');
+const SUPABASE_URL = getEnv('SUPABASE_URL');
+const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY');
 
+// Verificación detallada para el log
 const isConfigured = SUPABASE_URL.length > 0 && SUPABASE_KEY.length > 0;
+
+if (!isConfigured) {
+  console.warn("⚠️ [Supabase] Faltan variables de configuración:");
+  if (!SUPABASE_URL) console.warn("   - Falta URL");
+  if (!SUPABASE_KEY) console.warn("   - Falta ANON_KEY");
+}
 
 export const supabase = isConfigured 
   ? createClient(SUPABASE_URL, SUPABASE_KEY) 
@@ -22,20 +41,12 @@ export const supabase = isConfigured
  * Verifica si la conexión con Supabase es funcional
  */
 export const checkConnection = async () => {
-  if (!supabase) {
-    console.error("🔴 Supabase Client no inicializado. Revisa las variables en Netlify.");
-    return false;
-  }
+  if (!supabase) return false;
   try {
     const { error } = await supabase.from('hamilton_results').select('id').limit(1);
-    if (error) {
-      console.error("🔴 Error al consultar tabla:", error.message);
-      return false;
-    }
-    console.log("🟢 Conexión con Supabase establecida correctamente.");
-    return true;
+    return !error;
   } catch (err) {
-    console.error("🔴 Error de red con Supabase:", err);
+    console.error("🔴 Error de conexión:", err);
     return false;
   }
 };
@@ -49,10 +60,13 @@ export const saveTestResult = async (
   category: string, 
   answers: Record<number, number>
 ) => {
-  if (!supabase) return { error: "Cliente no configurado", data: null };
+  if (!supabase) {
+    return { 
+      error: `Configuración incompleta. URL: ${SUPABASE_URL ? '✅' : '❌'}, KEY: ${SUPABASE_KEY ? '✅' : '❌'}. Revisa Netlify.`, 
+      data: null 
+    };
+  }
 
-  console.log(`📤 Enviando resultado para ${userName}...`);
-  
   try {
     const { data, error } = await supabase
       .from('hamilton_results')
@@ -67,12 +81,9 @@ export const saveTestResult = async (
       ])
       .select();
       
-    if (error) console.error("❌ Error de Supabase al insertar:", error);
-    else console.log("✅ Resultado guardado exitosamente en la nube.");
-
     return { data, error };
   } catch (err: any) {
-    return { data: null, error: err.message || "Error desconocido" };
+    return { data: null, error: err.message || "Error inesperado de red" };
   }
 };
 
@@ -80,16 +91,14 @@ export const saveTestResult = async (
  * Guarda un nuevo suscriptor
  */
 export const subscribeUser = async (email: string, userName?: string) => {
-  if (!supabase) return { error: "Cliente no configurado", data: null };
-
+  if (!supabase) return { error: "No configurado", data: null };
   try {
     const { data, error } = await supabase
       .from('test_subscribers')
       .insert([{ email, user_name: userName, created_at: new Date().toISOString() }])
       .select();
-      
     return { data, error };
   } catch (err: any) {
-    return { data: null, error: err.message || "Error desconocido" };
+    return { data: null, error: err.message };
   }
 };
