@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test de Estrés de Hamilton</title>
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Test de Estrés de Hamilton - Valoración Online">
+    <meta property="og:description" content="Evalúa tu nivel de ansiedad y estrés con esta herramienta profesional basada en la escala HARS.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=1000">
+    <meta name="twitter:card" content="summary_large_image">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -20,6 +28,25 @@
                 500: '#0ea5e9',
                 600: '#0284c7',
                 700: '#0369a1',
+              }
+            },
+            animation: {
+              'heartbeat': 'heartbeat 1.5s ease-in-out infinite',
+              'pulse-ring': 'pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite',
+              'float': 'float 3s ease-in-out infinite',
+            },
+            keyframes: {
+              heartbeat: {
+                '0%, 100%': { transform: 'scale(1)', filter: 'drop-shadow(0 0 0px rgba(14, 165, 233, 0))' },
+                '50%': { transform: 'scale(1.1)', filter: 'drop-shadow(0 0 10px rgba(14, 165, 233, 0.5))' },
+              },
+              'pulse-ring': {
+                '0%': { transform: 'scale(.33)', opacity: '0.8' },
+                '80%, 100%': { transform: 'scale(1.5)', opacity: '0' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
               }
             }
           }
