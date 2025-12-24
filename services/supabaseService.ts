@@ -45,6 +45,7 @@ export const getSupabase = (): SupabaseClient | null => {
  */
 export const saveTestResult = async (
   userName: string, 
+  userEmail: string,
   score: number, 
   category: string, 
   answers: Record<number, number>
@@ -61,6 +62,7 @@ export const saveTestResult = async (
       .insert([
         { 
           user_name: userName, 
+          email: userEmail,
           score: score, 
           category: category, 
           answers: answers,

@@ -1,3 +1,4 @@
+
 import { Question } from './types';
 
 export const QUESTIONS: Question[] = [
@@ -23,9 +24,14 @@ export const QUESTIONS: Question[] = [
   { id: 20, text: "Tengo pesadillas.", isReverse: false },
 ];
 
+/**
+ * RANGOS CORREGIDOS PARA ESCALA 20-80 (Zung Anxiety Scale adaptation)
+ * Mínimo posible: 20 puntos
+ * Máximo posible: 80 puntos
+ */
 export const SCORING_RANGES = [
   { 
-    max: 14, 
+    max: 44, 
     label: "Normal", 
     color: "text-green-600", 
     bg: "bg-green-100",
@@ -36,7 +42,7 @@ export const SCORING_RANGES = [
     ]
   },
   { 
-    max: 18, 
+    max: 55, 
     label: "Ansiedad Leve", 
     color: "text-yellow-600", 
     bg: "bg-yellow-100",
@@ -47,7 +53,7 @@ export const SCORING_RANGES = [
     ]
   },
   { 
-    max: 25, 
+    max: 65, 
     label: "Ansiedad Moderada", 
     color: "text-orange-600", 
     bg: "bg-orange-100",
@@ -58,7 +64,7 @@ export const SCORING_RANGES = [
     ]
   },
   { 
-    max: 33, 
+    max: 75, 
     label: "Ansiedad Severa", 
     color: "text-red-600", 
     bg: "bg-red-100",

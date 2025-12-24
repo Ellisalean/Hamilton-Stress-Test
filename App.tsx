@@ -13,7 +13,9 @@ import {
   BrainCircuit,
   Copy,
   MessageCircle,
-  ShieldCheck
+  ShieldCheck,
+  Mail,
+  User
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -21,6 +23,7 @@ const App: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
@@ -42,7 +45,7 @@ const App: React.FC = () => {
   const isLastQuestion = currentQuestionIndex === QUESTIONS.length - 1;
 
   const handleStart = () => {
-    if (userName.trim()) {
+    if (userName.trim() && userEmail.trim()) {
       setStep('test');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -72,12 +75,11 @@ const App: React.FC = () => {
   const handleSave = async () => {
     if (saveStatus === 'success' || isSaving) return;
     setIsSaving(true);
-    const result = await saveTestResult(userName, score, resultData.label, answers);
+    const result = await saveTestResult(userName, userEmail, score, resultData.label, answers);
     setIsSaving(false);
     
     if (result.error) {
       setSaveStatus('error');
-      // No alertamos para no romper la estética, el botón cambiará de estado o se manejará silenciosamente
     } else {
       setSaveStatus('success');
     }
@@ -114,19 +116,38 @@ const App: React.FC = () => {
         Mide tu salud emocional con rigor clínico. Un análisis de 20 preguntas para entender tu nivel de ansiedad actual.
       </p>
 
-      <div className="w-full max-w-sm space-y-5">
-        <div className="bg-white p-2 rounded-[1.5rem] border-2 border-slate-100 focus-within:border-primary-500 transition-all shadow-sm focus-within:shadow-xl focus-within:shadow-primary-500/10">
+      <div className="w-full max-w-md space-y-4">
+        {/* Input Nombre */}
+        <div className="bg-white p-1 rounded-[1.2rem] border-2 border-slate-100 focus-within:border-primary-500 transition-all shadow-sm focus-within:shadow-xl focus-within:shadow-primary-500/10 flex items-center px-4">
+          <User className="w-5 h-5 text-slate-300" />
           <input
             type="text"
-            placeholder="Escribe tu nombre"
-            className="w-full px-4 py-4 bg-transparent outline-none text-slate-900 placeholder:text-slate-300 font-bold text-xl text-center"
+            placeholder="Tu nombre completo"
+            className="w-full px-4 py-4 bg-transparent outline-none text-slate-900 placeholder:text-slate-300 font-bold text-lg"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
+          />
+        </div>
+
+        {/* Input Email */}
+        <div className="bg-white p-1 rounded-[1.2rem] border-2 border-slate-100 focus-within:border-primary-500 transition-all shadow-sm focus-within:shadow-xl focus-within:shadow-primary-500/10 flex items-center px-4">
+          <Mail className="w-5 h-5 text-slate-300" />
+          <input
+            type="email"
+            placeholder="tu@correo.com"
+            className="w-full px-4 py-4 bg-transparent outline-none text-slate-900 placeholder:text-slate-300 font-bold text-lg"
+            value={userEmail}
+            onChange={(e) => setUserEmail(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleStart()}
           />
         </div>
         
-        <Button fullWidth onClick={handleStart} disabled={!userName.trim()} className="h-20 rounded-[1.5rem] text-xl font-black uppercase tracking-widest group shadow-2xl hover:scale-[1.02] active:scale-95 transition-all">
+        <Button 
+          fullWidth 
+          onClick={handleStart} 
+          disabled={!userName.trim() || !userEmail.trim()} 
+          className="h-20 rounded-[1.5rem] text-xl font-black uppercase tracking-widest group shadow-2xl hover:scale-[1.02] active:scale-95 transition-all mt-4"
+        >
           Comenzar Test
           <ChevronRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
@@ -262,6 +283,8 @@ const App: React.FC = () => {
               setStep('intro');
               setCurrentQuestionIndex(0);
               setSaveStatus('idle');
+              setUserName('');
+              setUserEmail('');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}>
               Reiniciar
