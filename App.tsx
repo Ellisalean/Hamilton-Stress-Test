@@ -15,7 +15,9 @@ import {
   MessageCircle,
   ShieldCheck,
   Mail,
-  User
+  User,
+  AlertCircle,
+  RefreshCcw
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -26,6 +28,7 @@ const App: React.FC = () => {
   const [userEmail, setUserEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
 
   const score = useMemo(() => {
@@ -75,11 +78,15 @@ const App: React.FC = () => {
   const handleSave = async () => {
     if (saveStatus === 'success' || isSaving) return;
     setIsSaving(true);
+    setSaveStatus('idle');
+    
     const result = await saveTestResult(userName, userEmail, score, resultData.label, answers);
     setIsSaving(false);
     
     if (result.error) {
+      console.error("Error guardando en Supabase:", result.error);
       setSaveStatus('error');
+      setErrorMessage(typeof result.error === 'string' ? result.error : "Error de conexión con la base de datos.");
     } else {
       setSaveStatus('success');
     }
@@ -117,7 +124,6 @@ const App: React.FC = () => {
       </p>
 
       <div className="w-full max-w-md space-y-4">
-        {/* Input Nombre */}
         <div className="bg-white p-1 rounded-[1.2rem] border-2 border-slate-100 focus-within:border-primary-500 transition-all shadow-sm focus-within:shadow-xl focus-within:shadow-primary-500/10 flex items-center px-4">
           <User className="w-5 h-5 text-slate-300" />
           <input
@@ -129,7 +135,6 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Input Email */}
         <div className="bg-white p-1 rounded-[1.2rem] border-2 border-slate-100 focus-within:border-primary-500 transition-all shadow-sm focus-within:shadow-xl focus-within:shadow-primary-500/10 flex items-center px-4">
           <Mail className="w-5 h-5 text-slate-300" />
           <input
@@ -267,27 +272,43 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-6">
+          <div className="flex flex-col gap-6">
             {saveStatus === 'success' ? (
-              <div className="flex-1 p-7 bg-green-500 text-white rounded-[2rem] flex items-center justify-center gap-4 font-black shadow-2xl shadow-green-500/40 animate-in zoom-in duration-500">
+              <div className="w-full p-7 bg-green-500 text-white rounded-[2rem] flex items-center justify-center gap-4 font-black shadow-2xl shadow-green-500/40 animate-in zoom-in duration-500">
                 <CheckCircle2 className="w-9 h-9" /> 
-                <span className="text-xl">¡RESULTADO GUARDADO!</span>
+                <span className="text-xl">¡PERFIL GUARDADO EXITOSAMENTE!</span>
+              </div>
+            ) : saveStatus === 'error' ? (
+              <div className="w-full p-7 bg-red-50 text-red-600 border-2 border-red-100 rounded-[2rem] flex flex-col items-center gap-4 animate-in shake duration-500">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-6 h-6" />
+                  <span className="font-black text-lg uppercase tracking-tight">Error de sincronización</span>
+                </div>
+                <p className="text-sm font-bold opacity-80 text-center max-w-sm">{errorMessage}</p>
+                <button 
+                  onClick={handleSave} 
+                  className="mt-2 flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-black hover:bg-red-700 transition-all active:scale-95"
+                >
+                  <RefreshCcw className="w-4 h-4" /> REINTENTAR GUARDAR
+                </button>
               </div>
             ) : (
-              <Button className="flex-1 h-24 rounded-[2rem] text-2xl font-black shadow-2xl uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all" onClick={handleSave} disabled={isSaving}>
-                {isSaving ? "Procesando..." : "Guardar mi Perfil"}
+              <Button className="w-full h-24 rounded-[2rem] text-2xl font-black shadow-2xl uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Sincronizando..." : "Guardar mi Perfil"}
               </Button>
             )}
-            <Button variant="outline" className="flex-1 h-24 rounded-[2rem] text-2xl font-black uppercase tracking-[0.2em] border-2 hover:bg-slate-50 transition-all" onClick={() => {
+            
+            <Button variant="outline" className="w-full h-24 rounded-[2rem] text-2xl font-black uppercase tracking-[0.2em] border-2 hover:bg-slate-50 transition-all" onClick={() => {
               setAnswers({});
               setStep('intro');
               setCurrentQuestionIndex(0);
               setSaveStatus('idle');
               setUserName('');
               setUserEmail('');
+              setErrorMessage('');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}>
-              Reiniciar
+              Reiniciar Test
             </Button>
           </div>
         </div>
