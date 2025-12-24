@@ -82,16 +82,17 @@ const App: React.FC = () => {
     setSaveStatus(result.error ? 'error' : 'success');
   };
 
-  const shareTitle = "Mi Valoración de Estrés";
-  const shareText = `He realizado el Test de Hamilton. Mi resultado es: ${resultData.label} (${score}/80). ¿Cómo estás tú? Descúbrelo aquí:`;
-  const shareUrl = window.location.href;
+  // Mensaje optimizado con emojis para llamar la atención del crawler de WhatsApp
+  const shareTitle = "📊 Mi Valoración de Estrés";
+  const shareUrl = window.location.origin + "/";
+  const shareText = `*Hamilton Stress Test* 💓\n\nHola, acabo de realizar mi valoración de ansiedad y mi resultado es: *${resultData.label}* (${score}/80).\n\n¿Quieres saber cómo estás tú? Haz el test gratuito aquí 👇\n${shareUrl}`;
 
   const handleShareNative = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: shareTitle,
-          text: shareText,
+          title: 'Hamilton Stress Test',
+          text: `Mi resultado: ${resultData.label} (${score}/80). Haz tu test aquí:`,
           url: shareUrl,
         });
       } catch (err) {
@@ -103,7 +104,7 @@ const App: React.FC = () => {
   };
 
   const handleShareWhatsApp = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank');
   };
 
@@ -244,11 +245,9 @@ const App: React.FC = () => {
             </p>
           </div>
 
-          {/* TARJETA DE COMPARTIR TIPO "INSTAGRAM STORY" */}
           <div className="relative mb-16 animate-float">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary-600 to-cyan-400 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
             <div className="relative bg-slate-900 rounded-[2.5rem] p-8 text-white overflow-hidden shadow-2xl">
-              {/* Decoración de fondo */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
               
@@ -277,7 +276,7 @@ const App: React.FC = () => {
                       className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-500/20 active:scale-95"
                     >
                       <Share2 className="w-4 h-4" />
-                      Compartir Ahora
+                      Compartir
                     </button>
                     <button 
                       onClick={handleShareWhatsApp}
@@ -344,7 +343,7 @@ const App: React.FC = () => {
               </div>
             ) : (
               <Button className="flex-1 h-16 rounded-2xl text-lg shadow-xl" onClick={handleSave} disabled={isSaving}>
-                {isSaving ? "Guardando..." : "Guardar en mi Perfil"}
+                {isSaving ? "Guardando..." : "Guardar Resultados"}
               </Button>
             )}
             
@@ -358,13 +357,6 @@ const App: React.FC = () => {
             </Button>
           </div>
         </div>
-      </div>
-      
-      <div className="flex flex-col items-center opacity-40">
-        <Activity className="w-6 h-6 mb-2 text-slate-400" />
-        <p className="text-center text-slate-500 text-[10px] font-bold tracking-[0.2em] uppercase">
-          Hamilton Anxiety Rating Scale (HARS) • Protocolo de Evaluación 2025
-        </p>
       </div>
     </div>
   );
