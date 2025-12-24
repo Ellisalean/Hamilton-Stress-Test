@@ -3,20 +3,23 @@ import { QUESTIONS, OPTIONS, getScoreCategory } from './constants';
 import { TestStep } from './types';
 import { Button } from './components/Button';
 import { ProgressBar } from './components/ProgressBar';
-import { saveTestResult, subscribeUser, supabase, checkConnection } from './services/supabaseService';
+import { saveTestResult, checkConnection, updateConfig, clearConfig, supabase } from './services/supabaseService';
 import { 
   Activity, 
   ChevronRight, 
   ChevronLeft, 
   CheckCircle2, 
   BrainCircuit,
-  Share2,
   Copy,
   MessageCircle,
   ShieldCheck,
   Wifi,
-  WifiOff,
-  AlertTriangle
+  AlertTriangle,
+  Settings,
+  X,
+  Database,
+  ExternalLink,
+  Info
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -28,14 +31,26 @@ const App: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
   const [dbStatus, setDbStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  
+  const [inputUrl, setInputUrl] = useState('');
+  const [inputKey, setInputKey] = useState('');
+
+  const verifyDb = async () => {
+    setDbStatus('checking');
+    const isOnline = await checkConnection();
+    setDbStatus(isOnline ? 'online' : 'offline');
+  };
 
   useEffect(() => {
-    const verify = async () => {
-      const isOnline = await checkConnection();
-      setDbStatus(isOnline ? 'online' : 'offline');
-    };
-    verify();
+    verifyDb();
   }, []);
+
+  const handleSaveConfig = () => {
+    if (inputUrl && inputKey) {
+      updateConfig(inputUrl, inputKey);
+    }
+  };
 
   const score = useMemo(() => {
     let total = 0;
@@ -81,7 +96,7 @@ const App: React.FC = () => {
     
     if (result.error) {
       setSaveStatus('error');
-      alert(`⚠️ Error de Configuración:\n\n${typeof result.error === 'string' ? result.error : result.error.message}`);
+      alert(`⚠️ Error de Guardado:\n${typeof result.error === 'string' ? result.error : result.error.message}`);
     } else {
       setSaveStatus('success');
     }
@@ -101,6 +116,67 @@ const App: React.FC = () => {
     setTimeout(() => setShowCopyFeedback(false), 2000);
   };
 
+  const renderConfigModal = () => (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <Database className="w-5 h-5 text-primary-600" />
+            </div>
+            <h3 className="font-black text-xl text-slate-900 uppercase tracking-tight">Configuración Experta</h3>
+          </div>
+          <button onClick={() => setShowConfigModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+            <X className="w-6 h-6 text-slate-400" />
+          </button>
+        </div>
+        
+        <div className="p-8 space-y-6">
+          <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex gap-3">
+            <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+            <p className="text-blue-700 text-xs leading-relaxed font-medium">
+              Para que el test funcione automáticamente para todos tus usuarios, añade <b>VITE_SUPABASE_URL</b> y <b>VITE_SUPABASE_ANON_KEY</b> en el panel de Netlify.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">URL Temporal (Solo este PC)</label>
+              <input 
+                type="text" 
+                className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-slate-700 transition-all"
+                placeholder="https://..."
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Key Temporal (Solo este PC)</label>
+              <textarea 
+                className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-slate-700 transition-all min-h-[100px] resize-none"
+                placeholder="eyJhbGciOi..."
+                value={inputKey}
+                onChange={(e) => setInputKey(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Button fullWidth onClick={handleSaveConfig} className="h-16 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl">
+              Aplicar en este navegador
+            </Button>
+            <button 
+              onClick={clearConfig}
+              className="text-[10px] font-black uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors"
+            >
+              Borrar caché de conexión
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderIntro = () => (
     <div className="max-w-2xl mx-auto px-4 py-12 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="relative mb-8">
@@ -118,20 +194,24 @@ const App: React.FC = () => {
         Mide tu salud emocional con rigor clínico. Un análisis rápido de 20 preguntas para entender tu nivel de estrés actual.
       </p>
 
-      <div className={`mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white border shadow-sm transition-colors ${dbStatus === 'offline' ? 'border-amber-200 bg-amber-50' : 'border-slate-100'}`}>
+      <div 
+        onClick={() => setShowConfigModal(true)}
+        className={`mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white border shadow-sm transition-all cursor-pointer hover:scale-105 active:scale-95 ${dbStatus === 'offline' ? 'border-amber-200 bg-amber-50' : 'border-slate-100'}`}
+      >
         {dbStatus === 'checking' && <div className="w-2 h-2 rounded-full bg-slate-300 animate-pulse" />}
         {dbStatus === 'online' && <Wifi className="w-3 h-3 text-green-500" />}
         {dbStatus === 'offline' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
         <span className={`text-[10px] font-black uppercase tracking-widest ${dbStatus === 'offline' ? 'text-amber-700' : 'text-slate-400'}`}>
-          {dbStatus === 'checking' ? 'Conectando...' : dbStatus === 'online' ? 'Nube Conectada' : 'Configuración Pendiente en Netlify'}
+          {dbStatus === 'checking' ? 'Verificando...' : dbStatus === 'online' ? 'Nube Lista' : 'Configuración Incompleta'}
         </span>
+        <Settings className="w-3 h-3 ml-1 opacity-40" />
       </div>
 
       <div className="w-full max-w-sm space-y-4">
         <div className="bg-white p-2 rounded-2xl border-2 border-slate-100 focus-within:border-primary-500 transition-all shadow-sm">
           <input
             type="text"
-            placeholder="Escribe tu nombre aquí"
+            placeholder="Escribe tu nombre"
             className="w-full px-4 py-3 bg-transparent outline-none text-slate-900 placeholder:text-slate-300 font-bold text-lg"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
@@ -139,14 +219,14 @@ const App: React.FC = () => {
         </div>
         
         <Button fullWidth onClick={handleStart} disabled={!userName.trim()} className="h-16 rounded-2xl text-xl font-black uppercase tracking-widest group shadow-2xl">
-          Comenzar Test
+          Comenzar
           <ChevronRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </div>
 
       <div className="mt-12 flex items-center gap-2 text-slate-400 text-xs font-black uppercase tracking-widest">
         <ShieldCheck className="w-4 h-4 text-green-500" />
-        Privacidad total y segura
+        Encriptado y Seguro
       </div>
     </div>
   );
@@ -155,7 +235,7 @@ const App: React.FC = () => {
     <div className="max-w-xl mx-auto px-4 py-8 w-full animate-in slide-in-from-right-4 duration-500">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setStep('intro')} className="text-xs font-black text-slate-400 hover:text-red-500 transition-colors uppercase tracking-[0.2em]">Cancelar</button>
+          <button onClick={() => setStep('intro')} className="text-xs font-black text-slate-400 hover:text-red-500 transition-colors uppercase tracking-[0.2em]">Cerrar</button>
           <span className="bg-white border border-slate-100 text-slate-900 px-4 py-1.5 rounded-full text-xs font-black shadow-sm">
             {currentQuestionIndex + 1} <span className="text-slate-300">/</span> {QUESTIONS.length}
           </span>
@@ -199,7 +279,7 @@ const App: React.FC = () => {
           Atrás
         </Button>
         <Button onClick={handleNext} disabled={!answers[currentQuestion.id]} className="flex-1 rounded-2xl h-16 shadow-2xl shadow-primary-500/20 text-lg font-black uppercase tracking-widest">
-          {isLastQuestion ? 'Ver Resultados' : 'Siguiente'}
+          {isLastQuestion ? 'Resultados' : 'Siguiente'}
           {!isLastQuestion && <ChevronRight className="w-5 h-5 ml-1" />}
         </Button>
       </div>
@@ -216,7 +296,7 @@ const App: React.FC = () => {
               <BrainCircuit className={`w-12 h-12 ${resultData.color}`} />
             </div>
           </div>
-          <p className={`text-sm font-black uppercase tracking-[0.5em] mb-4 opacity-60 ${resultData.color}`}>Puntuación Final</p>
+          <p className={`text-sm font-black uppercase tracking-[0.5em] mb-4 opacity-60 ${resultData.color}`}>Puntuación</p>
           <h2 className={`text-9xl font-black mb-4 tracking-tighter ${resultData.color}`}>{score}<span className="text-3xl font-bold opacity-30">/80</span></h2>
           <div className={`inline-block px-8 py-3 rounded-full bg-white shadow-xl ${resultData.color} text-2xl font-black tracking-tight`}>
             {resultData.label}
@@ -245,8 +325,8 @@ const App: React.FC = () => {
           <div className="relative mb-20">
             <div className="absolute -inset-2 bg-gradient-to-br from-primary-600 via-primary-400 to-cyan-400 rounded-[3rem] blur-xl opacity-20"></div>
             <div className="relative bg-slate-950 rounded-[3rem] p-10 text-white overflow-hidden shadow-2xl border border-white/5 text-center">
-              <h4 className="text-4xl font-black mb-6 tracking-tight">¡Ayuda a otros!</h4>
-              <p className="text-slate-400 mb-10 text-lg">Comparte este test con tus amigos de WhatsApp para que midan su estrés.</p>
+              <h4 className="text-4xl font-black mb-6 tracking-tight">¡Comparte!</h4>
+              <p className="text-slate-400 mb-10 text-lg">Ayuda a tus conocidos a medir su nivel de estrés.</p>
               <div className="flex flex-wrap justify-center gap-4">
                 <button onClick={handleShareWhatsApp} className="bg-[#25D366] hover:scale-105 active:scale-95 px-8 py-5 rounded-2xl font-black flex items-center gap-3 transition-all shadow-xl shadow-green-500/20 text-sm uppercase tracking-widest">
                   <MessageCircle className="w-6 h-6" /> WhatsApp
@@ -262,11 +342,11 @@ const App: React.FC = () => {
             {saveStatus === 'success' ? (
               <div className="flex-1 p-6 bg-green-500 text-white rounded-[1.5rem] flex items-center justify-center gap-3 font-black shadow-xl shadow-green-500/30 animate-in zoom-in">
                 <CheckCircle2 className="w-8 h-8" /> 
-                ¡GUARDADO EN LA NUBE!
+                ¡REGISTRO GUARDADO!
               </div>
             ) : (
               <Button className="flex-1 h-20 rounded-[1.5rem] text-xl font-black shadow-2xl uppercase tracking-[0.2em]" onClick={handleSave} disabled={isSaving}>
-                {isSaving ? "Sincronizando..." : "Sincronizar mi Perfil"}
+                {isSaving ? "Guardando..." : "Guardar mi Perfil"}
               </Button>
             )}
             <Button variant="outline" className="flex-1 h-20 rounded-[1.5rem] text-xl font-black uppercase tracking-[0.2em] border-2" onClick={() => {
@@ -291,6 +371,7 @@ const App: React.FC = () => {
         {step === 'test' && renderTest()}
         {step === 'results' && renderResults()}
       </main>
+      {showConfigModal && renderConfigModal()}
     </div>
   );
 };
