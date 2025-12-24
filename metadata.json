@@ -1,0 +1,5 @@
+{
+  "name": "Hamilton Stress Test",
+  "description": "A modern, digital implementation of the Hamilton Stress Test with scoring and Supabase integration capability.",
+  "requestFramePermissions": []
+}
